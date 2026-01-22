@@ -56,6 +56,7 @@ Add to your MCP client configuration:
 | `rename`  | Move or rename a note to a new path.                               |
 | `search`  | Full-text search with regex support. Returns matches with context. |
 | `related` | Find notes related by tags or wiki-links.                          |
+| `tags`    | List all unique tags across the vault (frontmatter and inline).    |
 
 ## Examples
 
