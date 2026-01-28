@@ -134,9 +134,10 @@ type (
 
 	// TagsOutput contains all unique tags in the vault with counts.
 	TagsOutput struct {
-		Tags       []TagInfo `json:"tags"`
-		TotalTags  int       `json:"totalTags"`
-		TotalNotes int       `json:"totalNotes"`
+		Tags          []TagInfo `json:"tags"`
+		TotalTags     int       `json:"totalTags"`
+		TotalNotes    int       `json:"totalNotes"`
+		NotesWithTags int       `json:"notesWithTags"`
 	}
 )
 

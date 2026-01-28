@@ -222,7 +222,7 @@ func handleSearch(ctx context.Context, req *mcp.CallToolRequest, input SearchInp
 	}
 
 	// Convert to output format and sort: tag matches first, then content
-	var items []SearchResultItem
+	items := []SearchResultItem{}
 	for _, r := range results {
 		var matches []SearchMatch
 		for _, m := range r.Matches {
@@ -612,8 +612,9 @@ func handleTags(ctx context.Context, req *mcp.CallToolRequest, input TagsInput) 
 	})
 
 	return nil, TagsOutput{
-		Tags:       tagInfos,
-		TotalTags:  len(tagInfos),
-		TotalNotes: notesWithTags,
+		Tags:          tagInfos,
+		TotalTags:     len(tagInfos),
+		TotalNotes:    len(allFiles),
+		NotesWithTags: notesWithTags,
 	}, nil
 }
