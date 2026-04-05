@@ -1,10 +1,11 @@
-.PHONY: build test clean install
+.PHONY: build test clean install fmt vet lint
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS := -ldflags "-X main.Version=$(VERSION)"
 
 build:
 	go build $(LDFLAGS) -o mcp-obsidian ./cmd/mcp-obsidian
+	go build -o obsidian-mcp ./cmd/obsidian-mcp
 
 test:
 	go test ./...
@@ -15,11 +16,15 @@ test-verbose:
 test-cover:
 	go test -cover ./...
 
+test-race:
+	go test -race -count=1 ./...
+
 clean:
-	rm -f mcp-obsidian
+	rm -f mcp-obsidian obsidian-mcp
 
 install: build
 	mv mcp-obsidian $(GOPATH)/bin/
+	mv obsidian-mcp $(GOPATH)/bin/
 
 fmt:
 	goimports -w .
