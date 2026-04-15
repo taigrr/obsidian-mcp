@@ -523,6 +523,23 @@ func findSharedTags(tags1, tags2 []string) []string {
 	return shared
 }
 
+func handleList(ctx context.Context, req *mcp.CallToolRequest, input ListInput) (*mcp.CallToolResult, ListOutput, error) {
+	path := strings.TrimSpace(input.Path)
+	if path == "" {
+		path = "."
+	}
+
+	listing, err := fileSystem.ListDirectory(path)
+	if err != nil {
+		return &mcp.CallToolResult{IsError: true}, ListOutput{}, err
+	}
+
+	return nil, ListOutput{
+		Files:       listing.Files,
+		Directories: listing.Directories,
+	}, nil
+}
+
 func addRelation(existing, newRel string) string {
 	if existing == "" {
 		return newRel

@@ -139,6 +139,17 @@ type (
 		TotalNotes    int       `json:"totalNotes"`
 		NotesWithTags int       `json:"notesWithTags"`
 	}
+
+	// ListInput contains parameters for listing a directory.
+	ListInput struct {
+		Path string `json:"path,omitempty" jsonschema:"Directory path relative to vault root (default: root)"`
+	}
+
+	// ListOutput contains directory listing results.
+	ListOutput struct {
+		Files       []string `json:"files"`
+		Directories []string `json:"directories"`
+	}
 )
 
 func registerTools(server *mcp.Server) {
@@ -181,4 +192,9 @@ func registerTools(server *mcp.Server) {
 		Name:        "tags",
 		Description: "List all unique tags across the vault with occurrence counts. Returns tags from both frontmatter and inline #tags.",
 	}, handleTags)
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "list",
+		Description: "List files and subdirectories in a vault directory. Defaults to vault root if no path provided.",
+	}, handleList)
 }
