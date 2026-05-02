@@ -4,7 +4,8 @@ A Model Context Protocol (MCP) server that enables AI assistants to read, write,
 
 ## Features
 
-- **Full vault access** — Read, write, edit, delete, rename, and search notes
+- **Full vault access** — Read, write, edit, delete, rename, list, and search notes
+- **Vault discovery** — Browse folders before opening a note
 - **Frontmatter support** — Parse and update YAML frontmatter seamlessly
 - **Security first** — Path traversal prevention, blocked system directories, safe defaults
 - **Token optimized** — Compact JSON responses for efficient AI interactions
@@ -57,6 +58,7 @@ Add to your MCP client configuration:
 | `search`  | Full-text search with regex support. Returns matches with context. |
 | `related` | Find notes related by tags or wiki-links.                          |
 | `tags`    | List all unique tags across the vault (frontmatter and inline).    |
+| `list`    | List files and subdirectories in a vault directory.                |
 
 ## Examples
 
@@ -95,6 +97,17 @@ Add to your MCP client configuration:
   "arguments": {
     "query": "TODO",
     "contextLines": 2
+  }
+}
+```
+
+### Listing a folder
+
+```json
+{
+  "tool": "list",
+  "arguments": {
+    "path": "projects"
   }
 }
 ```

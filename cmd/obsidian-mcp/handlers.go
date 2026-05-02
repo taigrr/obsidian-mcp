@@ -504,6 +504,7 @@ func extractLinks(content string) []string {
 	for link := range linkSet {
 		links = append(links, link)
 	}
+	sort.Strings(links)
 	return links
 }
 
