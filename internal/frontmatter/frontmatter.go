@@ -32,19 +32,23 @@ func (h *Handler) Parse(content string) types.ParsedNote {
 		return result
 	}
 
-	// Find the closing delimiter
-	endIndex := strings.Index(content[4:], "\n---\n")
-	if endIndex == -1 {
-		// Try finding --- at the very end
-		if strings.HasSuffix(content, "\n---") {
-			endIndex = len(content) - 4 - 4 // Adjust for the prefix we skipped
-		} else {
+	// Find the closing delimiter.
+	bodyStart := len("---\n")
+	closingIndex := strings.Index(content[bodyStart:], "\n---\n")
+	var yamlContent string
+	var contentStart int
+	if closingIndex == -1 {
+		// Try finding --- at the very end.
+		if !strings.HasSuffix(content, "\n---") {
 			return result
 		}
+		yamlEnd := len(content) - len("\n---")
+		yamlContent = content[bodyStart:yamlEnd]
+		contentStart = len(content)
+	} else {
+		yamlContent = content[bodyStart : bodyStart+closingIndex]
+		contentStart = bodyStart + closingIndex + len("\n---\n")
 	}
-
-	// Extract frontmatter YAML
-	yamlContent := content[4 : endIndex+4]
 
 	// Parse YAML
 	var frontmatter map[string]any
@@ -58,8 +62,8 @@ func (h *Handler) Parse(content string) types.ParsedNote {
 		result.Frontmatter = make(map[string]any)
 	}
 
-	// Content starts after the closing delimiter
-	result.Content = content[endIndex+4+5:] // +5 for "\n---\n"
+	// Content starts after the closing delimiter.
+	result.Content = content[contentStart:]
 
 	return result
 }

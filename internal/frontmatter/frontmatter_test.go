@@ -55,6 +55,46 @@ This is a test note without frontmatter.`
 	}
 }
 
+func TestHandler_ParseWithFrontmatterOnly(t *testing.T) {
+	handler := New()
+
+	content := `---
+title: Test Note
+tags: [test]
+---`
+
+	result := handler.Parse(content)
+
+	if result.Frontmatter["title"] != "Test Note" {
+		t.Errorf("Frontmatter[title] = %v, want %q", result.Frontmatter["title"], "Test Note")
+	}
+	if result.Content != "" {
+		t.Errorf("Content = %q, want empty", result.Content)
+	}
+	if result.OriginalContent != content {
+		t.Errorf("OriginalContent = %q, want %q", result.OriginalContent, content)
+	}
+}
+
+func TestHandler_ParseInvalidFrontmatterReturnsOriginalContent(t *testing.T) {
+	handler := New()
+
+	content := `---
+title: [invalid
+---
+
+# Content`
+
+	result := handler.Parse(content)
+
+	if len(result.Frontmatter) != 0 {
+		t.Errorf("Frontmatter = %v, want empty map", result.Frontmatter)
+	}
+	if result.Content != content {
+		t.Errorf("Content = %q, want original content", result.Content)
+	}
+}
+
 func TestHandler_StringifyWithFrontmatter(t *testing.T) {
 	handler := New()
 
@@ -148,6 +188,55 @@ func TestHandler_ValidateInvalidFrontmatterWithFunction(t *testing.T) {
 	}
 }
 
+func TestHandler_ValidateNestedInvalidFrontmatter(t *testing.T) {
+	handler := New()
+
+	fm := map[string]any{
+		"title": "Invalid",
+		"nested": map[string]any{
+			"hooks": []any{
+				"ok",
+				func() {},
+			},
+		},
+	}
+
+	result := handler.Validate(fm)
+
+	if result.IsValid {
+		t.Error("IsValid = true, want false")
+	}
+	if len(result.Errors) != 1 {
+		t.Fatalf("Errors = %v, want one error", result.Errors)
+	}
+	if !strings.Contains(result.Errors[0], "nested.hooks[1]") {
+		t.Errorf("Errors[0] = %q, want nested path", result.Errors[0])
+	}
+}
+
+func TestHandler_ValidateRejectsNonStringKeys(t *testing.T) {
+	handler := New()
+
+	fm := map[string]any{
+		"title": "Invalid",
+		"nested": map[any]any{
+			42: "answer",
+		},
+	}
+
+	result := handler.Validate(fm)
+
+	if result.IsValid {
+		t.Error("IsValid = true, want false")
+	}
+	if len(result.Errors) != 1 {
+		t.Fatalf("Errors = %v, want one error", result.Errors)
+	}
+	if !strings.Contains(result.Errors[0], "Non-string keys are not allowed: 42") {
+		t.Errorf("Errors[0] = %q, want non-string key error", result.Errors[0])
+	}
+}
+
 func TestHandler_UpdateFrontmatter(t *testing.T) {
 	handler := New()
 
@@ -181,6 +270,20 @@ Some content here.`
 	}
 	if !strings.Contains(result, "# Content") {
 		t.Error("Result should contain content")
+	}
+}
+
+func TestHandler_UpdateFrontmatterRejectsInvalidUpdates(t *testing.T) {
+	handler := New()
+
+	_, err := handler.UpdateFrontmatter("# Content", map[string]any{
+		"badFunction": func() {},
+	})
+	if err == nil {
+		t.Fatal("UpdateFrontmatter() error = nil, want error")
+	}
+	if !strings.Contains(err.Error(), "invalid frontmatter") {
+		t.Errorf("UpdateFrontmatter() error = %q, want invalid frontmatter", err)
 	}
 }
 
