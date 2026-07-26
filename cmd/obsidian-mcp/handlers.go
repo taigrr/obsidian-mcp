@@ -545,8 +545,10 @@ func addRelation(existing, newRel string) string {
 	if existing == "" {
 		return newRel
 	}
-	if strings.Contains(existing, newRel) {
-		return existing
+	for _, rel := range strings.Split(existing, ",") {
+		if rel == newRel {
+			return existing
+		}
 	}
 	return existing + "," + newRel
 }

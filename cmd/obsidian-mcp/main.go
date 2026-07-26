@@ -37,7 +37,7 @@ boundaries.`,
 	if err := fang.Execute(
 		context.Background(),
 		cmd,
-		fang.WithVersion(version),
+		fang.WithVersion(resolveVersion()),
 		fang.WithoutCompletions(),
 		fang.WithoutManpage(),
 	); err != nil {
@@ -66,7 +66,7 @@ func runServer(cmd *cobra.Command, args []string) error {
 	// Create MCP server
 	server := mcp.NewServer(&mcp.Implementation{
 		Name:    "obsidian-mcp",
-		Version: version,
+		Version: resolveVersion(),
 	}, nil)
 
 	registerTools(server)
