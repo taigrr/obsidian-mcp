@@ -2,6 +2,7 @@ package main
 
 import "runtime/debug"
 
+// version is overridable via -ldflags "-X main.version=..." for release builds.
 var version = getVersion()
 
 func getVersion() string {
@@ -10,13 +11,17 @@ func getVersion() string {
 		return "dev"
 	}
 
+	if v := info.Main.Version; v != "" && v != "(devel)" {
+		return v
+	}
+
 	var revision, modified string
-	for _, s := range info.Settings {
-		switch s.Key {
+	for _, setting := range info.Settings {
+		switch setting.Key {
 		case "vcs.revision":
-			revision = s.Value
+			revision = setting.Value
 		case "vcs.modified":
-			modified = s.Value
+			modified = setting.Value
 		}
 	}
 
