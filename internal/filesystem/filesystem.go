@@ -63,7 +63,7 @@ func (s *Service) ResolvePath(relativePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if strings.HasPrefix(relPath, "..") {
+	if relPath == ".." || strings.HasPrefix(relPath, ".."+string(filepath.Separator)) {
 		return "", fmt.Errorf("path traversal not allowed: %s", relativePath)
 	}
 

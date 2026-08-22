@@ -2,6 +2,7 @@
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS := -ldflags "-X main.version=$(VERSION)"
+GOBIN ?= $(shell go env GOPATH)/bin
 
 build:
 	go build $(LDFLAGS) -o obsidian-mcp ./cmd/obsidian-mcp
@@ -22,7 +23,8 @@ clean:
 	rm -f obsidian-mcp
 
 install: build
-	mv obsidian-mcp $(GOPATH)/bin/
+	install -d $(GOBIN)
+	install -m 0755 obsidian-mcp $(GOBIN)/obsidian-mcp
 
 fmt:
 	goimports -w .
