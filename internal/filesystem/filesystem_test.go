@@ -24,6 +24,36 @@ func cleanupTestVault(t *testing.T, path string) {
 	os.RemoveAll(path)
 }
 
+func TestService_ResolvePath(t *testing.T) {
+	t.Run("allows dot-prefixed directory names inside vault", func(t *testing.T) {
+		tmpDir, svc := setupTestVault(t)
+		defer cleanupTestVault(t, tmpDir)
+
+		got, err := svc.ResolvePath("..notes/project.md")
+		if err != nil {
+			t.Fatalf("ResolvePath() error = %v", err)
+		}
+
+		want := filepath.Join(tmpDir, "..notes", "project.md")
+		if got != want {
+			t.Fatalf("ResolvePath() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("rejects parent directory traversal", func(t *testing.T) {
+		tmpDir, svc := setupTestVault(t)
+		defer cleanupTestVault(t, tmpDir)
+
+		_, err := svc.ResolvePath("../outside.md")
+		if err == nil {
+			t.Fatal("ResolvePath() error = nil, want traversal error")
+		}
+		if !strings.Contains(err.Error(), "path traversal not allowed") {
+			t.Fatalf("ResolvePath() error = %q, want traversal error", err)
+		}
+	})
+}
+
 func TestService_PatchNote(t *testing.T) {
 	t.Run("single occurrence", func(t *testing.T) {
 		tmpDir, svc := setupTestVault(t)
