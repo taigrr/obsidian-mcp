@@ -388,3 +388,43 @@ func TestService_SearchAdvanced(t *testing.T) {
 		}
 	})
 }
+
+func TestService_SearchAdvancedIntegerBounds(t *testing.T) {
+	maxInt := int(^uint(0) >> 1)
+	for _, test := range []struct {
+		name         string
+		contextLines int
+		offset       int
+		limit        int
+		wantResults  int
+	}{
+		{name: "maximum context", contextLines: maxInt, limit: 2, wantResults: 2},
+		{name: "maximum limit with offset", contextLines: 2, offset: 1, limit: maxInt, wantResults: 1},
+		{name: "maximum offset", contextLines: 2, offset: maxInt, limit: maxInt, wantResults: 0},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			vault := t.TempDir()
+			const content = "before\nneedle\nafter"
+			for _, name := range []string{"a.md", "b.md"} {
+				if err := os.WriteFile(filepath.Join(vault, name), []byte(content), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			service := New(vault, pathfilter.New(nil))
+			results, total, err := service.SearchAdvanced(types.SearchParamsAdvanced{
+				Query: "needle", ContextLines: test.contextLines, Offset: test.offset, Limit: test.limit,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if total != 2 || len(results) != test.wantResults {
+				t.Fatalf("total=%d results=%d, want total=2 results=%d", total, len(results), test.wantResults)
+			}
+			for _, result := range results {
+				if len(result.Matches) != 1 || result.Matches[0].Context != content || result.Matches[0].Line != 2 {
+					t.Errorf("unexpected matches: %+v", result.Matches)
+				}
+			}
+		})
+	}
+}
