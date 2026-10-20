@@ -125,8 +125,9 @@ func (s *Service) SearchAdvanced(params types.SearchParamsAdvanced) ([]types.Sea
 
 				for lineNum, line := range lines {
 					if searchPattern.MatchString(line) {
-						startLine := max(lineNum-contextLines, 0)
-						endLine := min(lineNum+contextLines+1, len(lines))
+						// Bound distances before addition to avoid integer overflow.
+						startLine := lineNum - min(contextLines, lineNum)
+						endLine := lineNum + 1 + min(contextLines, len(lines)-lineNum-1)
 
 						contextSlice := lines[startLine:endLine]
 						contextText := strings.Join(contextSlice, "\n")
@@ -192,7 +193,7 @@ func (s *Service) SearchAdvanced(params types.SearchParamsAdvanced) ([]types.Sea
 		return []types.SearchResultAdvanced{}, totalFiles, nil
 	}
 
-	endIdx := min(offset+limit, len(allResults))
+	endIdx := offset + min(limit, len(allResults)-offset)
 
 	return allResults[offset:endIdx], totalFiles, nil
 }
